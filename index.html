@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Camping Gear Checklist</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #1a2f1e;
+      min-height: 100vh;
+      padding: 0 0 80px 0;
+    }
+
+    /* HEADER */
+    header {
+      background: linear-gradient(135deg, #2d5a27 0%, #1a3a1c 100%);
+      padding: 28px 20px 22px;
+      text-align: center;
+      border-bottom: 3px solid #4a8c3f;
+      position: relative;
+      overflow: hidden;
+    }
+
+    header::before {
+      content: '🌲 ⛺ 🌲';
+      font-size: 22px;
+      display: block;
+      margin-bottom: 8px;
+      letter-spacing: 6px;
+    }
+
+    header h1 {
+      color: #e8f5e0;
+      font-size: clamp(1.4rem, 5vw, 2rem);
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+    }
+
+    header p {
+      color: #a8d49a;
+      font-size: 0.85rem;
+      margin-top: 6px;
+    }
+
+    /* PROGRESS BAR */
+    .progress-container {
+      background: #243628;
+      padding: 14px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 2px solid #3a5c30;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+    }
+
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .progress-label span {
+      color: #b8d9aa;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .progress-label .count {
+      color: #7dd66a;
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .progress-bar-track {
+      background: #1a2f1e;
+      border-radius: 10px;
+      height: 10px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      background: linear-gradient(90deg, #4a8c3f, #7dd66a);
+      height: 100%;
+      border-radius: 10px;
+      transition: width 0.4s ease;
+      width: 0%;
+    }
+
+    /* MAIN CONTENT */
+    main {
+      max-width: 560px;
+      margin: 0 auto;
+      padding: 16px 14px;
+    }
+
+    /* SECTIONS */
+    .section {
+      background: #243628;
+      border-radius: 16px;
+      margin-bottom: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+      border: 1px solid #3a5c30;
+    }
+
+    .section-header {
+      background: linear-gradient(135deg, #3a5c30, #2d4a24);
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s;
+    }
+
+    .section-header:active {
+      background: linear-gradient(135deg, #4a6c3c, #384f2c);
+    }
+
+    .section-icon {
+      font-size: 1.3rem;
+    }
+
+    .section-title {
+      flex: 1;
+      color: #e8f5e0;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    .section-badge {
+      background: #1a3a1c;
+      color: #7dd66a;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 20px;
+      border: 1px solid #4a8c3f;
+      white-space: nowrap;
+    }
+
+    .chevron {
+      color: #7dd66a;
+      font-size: 0.8rem;
+      transition: transform 0.3s ease;
+    }
+
+    .section.collapsed .chevron {
+      transform: rotate(-90deg);
+    }
+
+    .section-items {
+      overflow: hidden;
+      transition: max-height 0.35s ease;
+    }
+
+    .section.collapsed .section-items {
+      max-height: 0 !important;
+    }
+
+    /* ITEMS */
+    .item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 14px 18px;
+      border-bottom: 1px solid #2d4a24;
+      cursor: pointer;
+      transition: background 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .item:last-child {
+      border-bottom: none;
+    }
+
+    .item:active {
+      background: #2d4a24;
+    }
+
+    .item.checked {
+      background: rgba(74, 140, 63, 0.08);
+    }
+
+    /* CUSTOM CHECKBOX */
+    .checkbox {
+      flex-shrink: 0;
+      width: 26px;
+      height: 26px;
+      border-radius: 8px;
+      border: 2px solid #4a8c3f;
+      background: #1a2f1e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      margin-top: 1px;
+    }
+
+    .item.checked .checkbox {
+      background: #4a8c3f;
+      border-color: #7dd66a;
+    }
+
+    .checkbox-tick {
+      display: none;
+      color: #e8f5e0;
+      font-size: 14px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .item.checked .checkbox-tick {
+      display: block;
+    }
+
+    .item-text {
+      flex: 1;
+      color: #c8e0ba;
+      font-size: 0.92rem;
+      line-height: 1.4;
+      transition: all 0.2s;
+    }
+
+    .item-optional {
+      font-size: 0.72rem;
+      color: #7a9e70;
+      font-style: italic;
+      margin-left: 4px;
+    }
+
+    .item.checked .item-text {
+      color: #6a9060;
+      text-decoration: line-through;
+      text-decoration-color: #4a8c3f;
+    }
+
+    /* FOOTER BUTTONS */
+    .footer-actions {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(0deg, #1a2f1e 70%, transparent);
+      padding: 16px 14px 20px;
+      display: flex;
+      gap: 10px;
+      max-width: 560px;
+      margin: 0 auto;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .btn {
+      flex: 1;
+      padding: 15px 10px;
+      border: none;
+      border-radius: 14px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      letter-spacing: 0.3px;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-reset {
+      background: #2d4a24;
+      color: #a8d49a;
+      border: 1.5px solid #4a8c3f;
+    }
+
+    .btn-reset:active {
+      background: #3a5c30;
+      transform: scale(0.98);
+    }
+
+    .btn-download {
+      background: linear-gradient(135deg, #4a8c3f, #6ab85c);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(74, 140, 63, 0.4);
+    }
+
+    .btn-download:active {
+      transform: scale(0.97);
+      box-shadow: 0 2px 8px rgba(74, 140, 63, 0.3);
+    }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      top: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background: #2d5a27;
+      color: #e8f5e0;
+      padding: 12px 20px;
+      border-radius: 30px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+      border: 1px solid #7dd66a;
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 999;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* MODAL */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      z-index: 500;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: #243628;
+      border-radius: 20px;
+      padding: 28px 22px;
+      width: 100%;
+      max-width: 420px;
+      border: 1px solid #4a8c3f;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+      text-align: center;
+    }
+
+    .modal-icon {
+      font-size: 2.5rem;
+      margin-bottom: 12px;
+    }
+
+    .modal h2 {
+      color: #e8f5e0;
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+    }
+
+    .modal p {
+      color: #a8d49a;
+      font-size: 0.88rem;
+      line-height: 1.6;
+      margin-bottom: 22px;
+    }
+
+    .modal-stats {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-bottom: 22px;
+    }
+
+    .modal-stat {
+      text-align: center;
+    }
+
+    .modal-stat-num {
+      display: block;
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #7dd66a;
+    }
+
+    .modal-stat-label {
+      font-size: 0.75rem;
+      color: #7a9e70;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .modal-buttons .btn {
+      flex: 1;
+      padding: 13px 10px;
+    }
+
+    /* SECTION ALL DONE BADGE */
+    .section-done {
+      display: none;
+      font-size: 0.9rem;
+    }
+
+    .section-header.all-done .section-done {
+      display: inline;
+    }
+
+    .section-header.all-done .section-badge {
+      background: #2d5a27;
+      border-color: #7dd66a;
+      color: #7dd66a;
+    }
+
+    /* Select All row */
+    .select-all-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 18px;
+      border-bottom: 1px solid #3a5c30;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .select-all-row:active {
+      background: #2d4a24;
+    }
+
+    .select-all-text {
+      color: #7dd66a;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .select-all-checkbox {
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      border: 2px solid #4a8c3f;
+      background: #1a2f1e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .select-all-checkbox.all-checked {
+      background: #4a8c3f;
+      border-color: #7dd66a;
+    }
+
+    .select-all-tick {
+      display: none;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 900;
+    }
+
+    .select-all-checkbox.all-checked .select-all-tick {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Camping Gear Checklist</h1>
+    <p>Tap items to check them off your list</p>
+  </header>
+
+  <div class="progress-container">
+    <div class="progress-label">
+      <span>🏕️ Pack Progress</span>
+      <span class="count" id="progressCount">0 / 0 packed</span>
+    </div>
+    <div class="progress-bar-track">
+      <div class="progress-bar-fill" id="progressFill"></div>
+    </div>
+  </div>
+
+  <main>
+
+    <!-- CLOTHES SECTION -->
+    <div class="section" id="section-clothes">
+      <div class="section-header" onclick="toggleSection('clothes')">
+        <span class="section-icon">👕</span>
+        <span class="section-title">Clothes</span>
+        <span class="section-done">✅</span>
+        <span class="section-badge" id="badge-clothes">0/15</span>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="section-items" id="items-clothes">
+        <div class="select-all-row" onclick="toggleSection_selectAll('clothes')">
+          <div class="select-all-checkbox" id="selAll-clothes"><span class="select-all-tick">✓</span></div>
+          <span class="select-all-text">Select / Deselect All</span>
+        </div>
+        <div class="item" onclick="toggleItem(this)"><div class="checkbox"><span class="checkbox-tick">✓</span></div><div class="item-text">Shoes <span class="item-optional">(good traction &amp; support)</span></div></div>
+        <div class="item" onclick="toggleItem(this)"><div class="checkbox"><span class="checkbox-tick">✓</span></div><div class="item-text">Short-sleeved shirts <span class="item-optional">(5)</span></div></div>
+        <div class="item" onclick="toggleItem(this)"><div class="checkbox"><span class="checkbox-tick">✓</span></div><div class="item-text">Warm shirt or hoodie</div></div>
+        <div class="item" onclick="toggleItem(this)"><div class="checkbox"><span class="checkbox-tick">✓</span></div><div class="item-text">Shorts <span class="item-optional">(2–3 pairs)</span></div></div>
+        <div class="item" onclick="toggleItem(this)"><div class="checkbox"><span class="checkbox-tick">✓</span></div><div class="item-text">Long pants <span class="item-optional">(1 pair)</span></div></div>
+        <div class="item" onclick="toggleItem(this)"><div class="checkbox"><span class="checkbox-tick">✓</span></div><div class="item-text">Rain coat or poncho</div></div>
+        <div class="item" onclick="toggleItem(this)"><div class="checkbox"><span class="checkbox-tick">✓</span></div><div class="item-text">Jacket or warm coat</div></div>
+        <div class="item" onclick="toggleItem(this)"><div class="checkbox"><span class="checkbox-tick">✓</span></div><div class="item-text">Pajamas or sleepwear</div></div>
+        <div class="item" onclick="toggleItem(this)"><div class="checkbox"><span class="checkbox-tick">✓</span></div><div class="item-text">Socks <span class="item-optional">(6–8 pairs, optional)</span></div></div>
+        <div class="item" onclick="toggleItem(this)"><div class="checkbox"><span class="checkbox-tick">✓</span></div><div class="item-text">Underwear <span class="item-optional">(6–8 pairs)</span></div></div>
+        <div class="item" onclick="toggleItem(this)"><div class="checkbox"><span class="checkbox-tick">✓</span></div><div class="item-text">Hat or baseball cap <span class="item-optional">(optional, sun protection)</span></div></div>
+        <div class="item" onclick="toggleItem(this)"><div class="checkbox"><span class="checkbox-tick">✓</span></div><div class="item-text">Water shoes or sandals with heel straps</div></div>
+        <div class="item" onclick="toggleItem(this)"><div class="checkbox"><span class="checkbox-tick">✓</span></div><div class="item-text">Swimsuit <span class="item-optional">(optional)</span></div></div>
+        <div class="item" onclick="toggleItem(this)"><div class="checkbox"><span class="checkbox-tick">✓</span></div><div class="item-text">Sunglasses <span class="item-optional">(optional)</span></div></div>
+        <div class="item" onclick="toggleItem(this)"><div class="checkbox"><span class="checkbox-tick">✓</span></div><div class="item-text">Eyewear retainer <span class="item-optional">(optional)</span></div></div>
+      </div>
+    </div>
+
+    <!-- GEAR SECTION -->
+    <div class="section" id="section-gear">
+      <div class="section-header" onclick="toggleSection('gear')">
+        <span class="section-icon">🎒</span>
+        <span class="section-title">Gear</span>
+        <span class="section-done">✅</span>
+        <span class="section-badge" id="badge-gear">0/7</span>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="section-items" id="items-gear">
+        <div class="select-all-row" onclick="toggleSection_selectAll('gear')">
+          <div class="select-all-checkbox" id="selAll-gear"><span class="select-all-tick">✓</span></div>
+          <span class="select-all-text">Select / Deselect All</span>
+        </div>
+        <div class="item" onclick="toggleItem(this)"><div class="checkbox"><span class="checkbox-tick">✓</span></div><div class="item-text">Sleeping bag and sleeping pad</div></div>
+        <div class="item" onclick="toggleItem(this)"><div class="checkbox"><span class="checkbox-tick">✓</span></div><div class="item-text">Pillow <span class="item-optional">(optional)</span></div></div>
+        <div class="item" onclick="toggleItem(this)"><div class="checkbox"><span class="checkbox-tick">✓</span></div><div class="item-text">Headlamp or flashlight with extra batteries</div></div>
+        <div class="item" onclick="toggleItem(this)"><div class="checkbox"><span class="checkbox-tick">✓</span></div><div class="item-text">Small backpack</div></div>
+        <div class="item" onclick="toggleItem(this)"><div class="checkbox"><span class="checkbox-tick">✓</span></div><div class="item-text">32 oz water bottle</div></div>
+        <div class="item" onclick="toggleItem(this)"><div class="checkbox"><span class="checkbox-tick">✓</span></div><div class="item-text">Dry bag <span class="item-optional">(optional)</span></div></div>
+        <div class="item" onclick="toggleItem(this)"><div class="checkbox"><span class="checkbox-tick">✓</span></div><div class="item-text">Camp chair <span class="item-optional">(optional)</span></div></div>
+      </div>
+    </div>
+
+    <!-- PERSONAL ITEMS SECTION -->
+    <div class="section" id="section-personal">
+      <div class="section-header" onclick="toggleSection('personal')">
+        <span class="section-icon">🪥</span>
+        <span class="section-title">Personal Items</span>
+        <span class="section-done">✅</span>
+        <span class="section-badge" id="badge-personal">0/8</span>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="section-items" id="items-personal">
+        <div class="select-all-row" onclick="toggleSection_selectAll('personal')">
+          <div class="select-all-checkbox" id="selAll-personal"><span class="select-all-tick">✓</span></div>
+          <span class="select-all-text">Select / Deselect All</span>
+        </div>
+        <div class="item" onclick="toggleItem(this)"><div class="checkbox"><span class="checkbox-tick">✓</span></div><div class="item-text">Toothbrush and toothpaste</div></div>
+        <div class="item" onclick="toggleItem(this)"><div class="checkbox"><span class="checkbox-tick">✓</span></div><div class="item-text">Deodorant</div></div>
+        <div class="item" onclick="toggleItem(this)"><div class="checkbox"><span class="checkbox-tick">✓</span></div><div class="item-text">Soap and/or shampoo</div></div>
+        <div class="item" onclick="toggleItem(this)"><div class="checkbox"><span class="checkbox-tick">✓</span></div><div class="item-text">Towel</div></div>
+        <div class="item" onclick="toggleItem(this)"><div class="checkbox"><span class="checkbox-tick">✓</span></div><div class="item-text">Mosquito repellent</div></div>
+        <div class="item" onclick="toggleItem(this)"><div class="checkbox"><span class="checkbox-tick">✓</span></div><div class="item-text">Sunscreen <span class="item-optional">(waterproof recommended for rafting)</span></div></div>
+        <div class="item" onclick="toggleItem(this)"><div class="checkbox"><span class="checkbox-tick">✓</span></div><div class="item-text">Personal first aid kit</div></div>
+        <div class="item" onclick="toggleItem(this)"><div class="checkbox"><span class="checkbox-tick">✓</span></div><div class="item-text">Personal medications <span class="item-optional">(if required)</span></div></div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- FOOTER BUTTONS -->
+  <div class="footer-actions">
+    <button class="btn btn-reset" onclick="resetAll()">🔄 Reset</button>
+    <button class="btn btn-download" onclick="openDownloadModal()">📄 Download PDF</button>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <!-- MODAL -->
+  <div class="modal-overlay" id="modal" onclick="closeModal(event)">
+    <div class="modal">
+      <div class="modal-icon">🏕️</div>
+      <h2>Ready to Download?</h2>
+      <p id="modal-msg">Review your checklist summary below, then download your PDF.</p>
+      <div class="modal-stats">
+        <div class="modal-stat">
+          <span class="modal-stat-num" id="modal-checked">0</span>
+          <span class="modal-stat-label">Packed ✓</span>
+        </div>
+        <div class="modal-stat">
+          <span class="modal-stat-num" id="modal-remaining" style="color:#f4a142;">0</span>
+          <span class="modal-stat-label">Remaining</span>
+        </div>
+        <div class="modal-stat">
+          <span class="modal-stat-num" id="modal-total">0</span>
+          <span class="modal-stat-label">Total Items</span>
+        </div>
+      </div>
+      <div class="modal-buttons">
+        <button class="btn btn-reset" onclick="closeModalBtn()">Cancel</button>
+        <button class="btn btn-download" onclick="downloadPDF()">⬇ Download PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ─── DATA ──────────────────────────────────────────────────────────────────
+    const sections = {
+      clothes:  { label: 'CLOTHES',        icon: '👕' },
+      gear:     { label: 'GEAR',           icon: '🎒' },
+      personal: { label: 'PERSONAL ITEMS', icon: '🪥' },
+    };
+
+    // ─── TOGGLE ITEM ──────────────────────────────────────────────────────────
+    function toggleItem(el) {
+      el.classList.toggle('checked');
+      updateAll();
+    }
+
+    // ─── SELECT ALL IN SECTION ────────────────────────────────────────────────
+    function toggleSection_selectAll(id) {
+      const container = document.getElementById('items-' + id);
+      const items = container.querySelectorAll('.item');
+      const allChecked = [...items].every(i => i.classList.contains('checked'));
+      items.forEach(i => {
+        if (allChecked) i.classList.remove('checked');
+        else i.classList.add('checked');
+      });
+      updateAll();
+    }
+
+    // ─── COLLAPSE SECTION ─────────────────────────────────────────────────────
+    function toggleSection(id) {
+      const sec = document.getElementById('section-' + id);
+      const itemsEl = document.getElementById('items-' + id);
+
+      if (sec.classList.contains('collapsed')) {
+        sec.classList.remove('collapsed');
+        itemsEl.style.maxHeight = itemsEl.scrollHeight + 'px';
+        setTimeout(() => itemsEl.style.maxHeight = 'none', 380);
+      } else {
+        itemsEl.style.maxHeight = itemsEl.scrollHeight + 'px';
+        requestAnimationFrame(() => {
+          itemsEl.style.maxHeight = itemsEl.scrollHeight + 'px';
+          requestAnimationFrame(() => {
+            sec.classList.add('collapsed');
+          });
+        });
+      }
+    }
+
+    // ─── UPDATE PROGRESS & BADGES ─────────────────────────────────────────────
+    function updateAll() {
+      let totalItems = 0, totalChecked = 0;
+
+      Object.keys(sections).forEach(id => {
+        const container = document.getElementById('items-' + id);
+        const items = container.querySelectorAll('.item');
+        const checked = container.querySelectorAll('.item.checked');
+        const total = items.length;
+        const done = checked.length;
+
+        document.getElementById('badge-' + id).textContent = `${done}/${total}`;
+
+        const header = document.querySelector('#section-' + id + ' .section-header');
+        if (done === total) header.classList.add('all-done');
+        else header.classList.remove('all-done');
+
+        // Select all checkbox state
+        const selAll = document.getElementById('selAll-' + id);
+        if (done === total) selAll.classList.add('all-checked');
+        else selAll.classList.remove('all-checked');
+
+        totalItems += total;
+        totalChecked += done;
+      });
+
+      document.getElementById('progressCount').textContent = `${totalChecked} / ${totalItems} packed`;
+      const pct = totalItems > 0 ? (totalChecked / totalItems * 100) : 0;
+      document.getElementById('progressFill').style.width = pct + '%';
+    }
+
+    // ─── RESET ────────────────────────────────────────────────────────────────
+    function resetAll() {
+      document.querySelectorAll('.item').forEach(i => i.classList.remove('checked'));
+      updateAll();
+      showToast('🔄 Checklist reset!');
+    }
+
+    // ─── TOAST ────────────────────────────────────────────────────────────────
+    let toastTimer;
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    // ─── MODAL ────────────────────────────────────────────────────────────────
+    function openDownloadModal() {
+      const items = document.querySelectorAll('.item');
+      const checked = document.querySelectorAll('.item.checked');
+      const total = items.length;
+      const done = checked.length;
+      const remaining = total - done;
+
+      document.getElementById('modal-checked').textContent = done;
+      document.getElementById('modal-remaining').textContent = remaining;
+      document.getElementById('modal-total').textContent = total;
+
+      if (remaining === 0) {
+        document.getElementById('modal-msg').textContent = '🎉 You\'ve packed everything! Your checklist is complete.';
+      } else if (done === 0) {
+        document.getElementById('modal-msg').textContent = 'You haven\'t checked anything yet. Download anyway?';
+      } else {
+        document.getElementById('modal-msg').textContent = `You've packed ${done} items. ${remaining} still to go — download your current progress?`;
+      }
+
+      document.getElementById('modal').classList.add('active');
+    }
+
+    function closeModal(e) {
+      if (e.target === document.getElementById('modal')) closeModalBtn();
+    }
+
+    function closeModalBtn() {
+      document.getElementById('modal').classList.remove('active');
+    }
+
+    // ─── PDF GENERATION ───────────────────────────────────────────────────────
+    function downloadPDF() {
+      closeModalBtn();
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
+
+      const pageW = doc.internal.pageSize.getWidth();
+      const pageH = doc.internal.pageSize.getHeight();
+      const margin = 18;
+      const colW = pageW - margin * 2;
+      let y = margin;
+
+      // ── Background ──
+      doc.setFillColor(26, 47, 30);
+      doc.rect(0, 0, pageW, pageH, 'F');
+
+      // ── Header Banner ──
+      doc.setFillColor(45, 90, 39);
+      doc.roundedRect(margin - 4, y - 4, colW + 8, 24, 4, 4, 'F');
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(18);
+      doc.setTextColor(232, 245, 224);
+      doc.text('🌲 Camping Gear Checklist', pageW / 2, y + 7, { align: 'center' });
+
+      const now = new Date();
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(168, 212, 154);
+      doc.text(`Generated: ${now.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' })}`, pageW / 2, y + 14, { align: 'center' });
+      y += 30;
+
+      // ── Summary Bar ──
+      const allItems = document.querySelectorAll('.item');
+      const checkedItems = document.querySelectorAll('.item.checked');
+      const total = allItems.length;
+      const done = checkedItems.length;
+      const pct = total > 0 ? Math.round(done / total * 100) : 0;
+
+      doc.setFillColor(36, 54, 40);
+      doc.roundedRect(margin - 4, y, colW + 8, 14, 3, 3, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.setTextColor(125, 214, 106);
+      doc.text(`Packed: ${done} / ${total} items  (${pct}% complete)`, margin, y + 9);
+      y += 20;
+
+      // ── Sections ──
+      Object.keys(sections).forEach(id => {
+        const container = document.getElementById('items-' + id);
+        const items = container.querySelectorAll('.item');
+        const sectionChecked = container.querySelectorAll('.item.checked').length;
+        const sectionTotal = items.length;
+
+        // Section Header
+        doc.setFillColor(58, 92, 48);
+        doc.roundedRect(margin - 4, y, colW + 8, 11, 3, 3, 'F');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(10);
+        doc.setTextColor(232, 245, 224);
+        doc.text(sections[id].label, margin, y + 7.5);
+        doc.setTextColor(125, 214, 106);
+        doc.setFontSize(8);
+        doc.text(`${sectionChecked}/${sectionTotal}`, pageW - margin, y + 7.5, { align: 'right' });
+        y += 14;
+
+        // Items
+        items.forEach(item => {
+          const isChecked = item.classList.contains('checked');
+          const text = item.querySelector('.item-text').textContent.trim();
+
+          // Row background
+          if (isChecked) {
+            doc.setFillColor(45, 74, 36);
+          } else {
+            doc.setFillColor(36, 54, 40);
+          }
+          doc.roundedRect(margin - 2, y - 1, colW + 4, 9, 2, 2, 'F');
+
+          // Checkbox
+          if (isChecked) {
+            doc.setFillColor(74, 140, 63);
+            doc.roundedRect(margin, y + 0.5, 6, 6, 1, 1, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(7);
+            doc.text('✓', margin + 1.2, y + 5.5);
+          } else {
+            doc.setDrawColor(74, 140, 63);
+            doc.setLineWidth(0.4);
+            doc.roundedRect(margin, y + 0.5, 6, 6, 1, 1, 'S');
+          }
+
+          // Item text
+          doc.setFont('helvetica', isChecked ? 'normal' : 'normal');
+          doc.setFontSize(9);
+          doc.setTextColor(isChecked ? 106 : 200, isChecked ? 144 : 224, isChecked ? 96 : 186);
+          if (isChecked) {
+            // Strikethrough simulation
+            doc.text(text, margin + 9, y + 5.5);
+            const tw = doc.getTextWidth(text);
+            doc.setDrawColor(100, 140, 90);
+            doc.setLineWidth(0.5);
+            doc.line(margin + 9, y + 3.5, margin + 9 + tw, y + 3.5);
+          } else {
+            doc.text(text, margin + 9, y + 5.5);
+          }
+
+          y += 10;
+
+          // Page overflow
+          if (y > pageH - 25) {
+            doc.addPage();
+            doc.setFillColor(26, 47, 30);
+            doc.rect(0, 0, pageW, pageH, 'F');
+            y = margin;
+          }
+        });
+
+        y += 4;
+      });
+
+      // ── Footer ──
+      doc.setFillColor(36, 54, 40);
+      doc.rect(0, pageH - 12, pageW, 12, 'F');
+      doc.setFont('helvetica', 'italic');
+      doc.setFontSize(7.5);
+      doc.setTextColor(122, 158, 112);
+      doc.text('Have a great camping trip! ⛺', pageW / 2, pageH - 4.5, { align: 'center' });
+
+      doc.save('camping-checklist.pdf');
+      showToast('✅ PDF downloaded!');
+    }
+
+    // ─── INIT ────────────────────────────────────────────────────────────────
+    updateAll();
+
+    // Set initial max-heights for expanded sections
+    Object.keys(sections).forEach(id => {
+      const el = document.getElementById('items-' + id);
+      el.style.maxHeight = 'none';
+    });
+  </script>
+</body>
+</html>
