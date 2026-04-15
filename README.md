@@ -1,1 +1,4 @@
-# camp-checklist
+# Stake Young Camp Camping Gear Checklist
+## LU3 STAKE YOUNG MEN'S CAMP 2026
+### HUNTSVILLE, UTAH
+### MONDAY, JUNE 29 - THURSDAY, JULY 2
