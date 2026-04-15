@@ -1,6 +1,9 @@
 # LU3 STAKE YOUNG MEN'S CAMP CHECKLIST GEAR 2026
+
 LOCATION: HUNTSVILLE, UTAH
+
 DATES: MONDAY, JUNE 29 - THURSDAY, JULY 2
+
 Adult Size T-shirt (14 youth)
 1) Marvin Uyema - Small
 2) Connor Vea - Large
