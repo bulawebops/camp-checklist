@@ -1,7 +1,6 @@
-# Stake Young Camp Camping Gear Checklist
-## LU3 STAKE YOUNG MEN'S CAMP 2026
-### HUNTSVILLE, UTAH
-### MONDAY, JUNE 29 - THURSDAY, JULY 2
+# LU3 STAKE YOUNG MEN'S CAMP CHECKLIST GEAR 2026
+LOCATION: HUNTSVILLE, UTAH
+DATES: MONDAY, JUNE 29 - THURSDAY, JULY 2
 Adult Size T-shirt (14 youth)
 1) Marvin Uyema - Small
 2) Connor Vea - Large
