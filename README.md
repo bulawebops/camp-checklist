@@ -20,9 +20,10 @@ Adult Size T-shirt (14 youth)
 13) Tank Mahe - Large
 14) Sammy Talivakaola - Large
 
-Priesthood Leaders committed to attend: (5 adult leaders)
+Priesthood Leaders committed to attend: (6 adult leaders)
 1) Bishop Mahe - 3XL
 2) Chad Bowman - Large
 3) Jason Faga - 2XL
 4) Johnny Taukeiaho - XL
-5) Robert Talivakaola- XL
+5) Robert Talivakaola - XL
+6) Teki Fetokai - 3XL
